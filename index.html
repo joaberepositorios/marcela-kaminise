@@ -339,13 +339,14 @@ scene.add(house);
 
 /* exterior: terraço e a vista de Nova York num painel curvo em volta das janelas */
 {
-  for (const t of gravel) { t.repeat.set(48, 48); t.needsUpdate = true; }
-  const roof = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), new THREE.MeshStandardMaterial({ map: gravel[0], normalMap: gravel[1], color: 0x4a4440, roughness: 1, envMapIntensity: .2 }));
+  // laje do terraço só em volta da casa: além da borda, a cidade continua lá embaixo
+  for (const t of gravel) { t.repeat.set(7, 6); t.needsUpdate = true; }
+  const roof = new THREE.Mesh(new THREE.PlaneGeometry(17, 15), new THREE.MeshStandardMaterial({ map: gravel[0], normalMap: gravel[1], color: 0x8a8178, roughness: 1, envMapIntensity: .25 }));
   roof.rotation.x = -Math.PI / 2; roof.position.y = -.03; scene.add(roof);
   const R = 40, ARC = Math.PI * 150 / 180, H = R * ARC / (nycTex.image.width / nycTex.image.height);
   nycTex.repeat.x = -1; // vista por dentro do cilindro
   const pano = new THREE.Mesh(new THREE.CylinderGeometry(R, R, H, 96, 1, true, Math.PI * 3 / 4 - ARC / 2, ARC), new THREE.MeshBasicMaterial({ map: nycTex, side: THREE.BackSide }));
-  pano.position.y = H * .5 - H * .55; // horizonte da foto na altura dos olhos
+  pano.position.y = H * .5 - H * .6; // horizonte da foto um pouco acima dos olhos: a cidade fica lá embaixo
   scene.add(pano);
 }
 
