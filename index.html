@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marcela Kaminise · Arquitetura</title>
+<meta name="description" content="Marcela Kaminise, estudante de Arquitetura e Urbanismo na ESAMC Uberlândia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400&family=Jost:wght@200;300&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F1E4; --ink:#1E1A14;
+  --moss:#A9C48A; --sun:#E9B949; --sun-soft:#F4D98A;
+  --line:rgba(246,241,228,.22);
+  --gutter:clamp(24px,8vw,128px);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --display:'Unbounded',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{background:#2a2219 url(img/cena-4.jpg) center/cover fixed;color:var(--paper);font-family:'Space Grotesk',system-ui,sans-serif;font-weight:300;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+::selection{background:var(--sun-soft);color:var(--ink)}
+h1,h2,.display{font-family:var(--display);font-weight:300}
+
+#scene{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:0;opacity:0;transition:opacity 1.4s var(--ease),filter .9s var(--ease)}
+#scene.on{opacity:1}
+#scene.blur{filter:blur(5px) brightness(.85)}
+/* véu: escurece de leve a casa enquanto há texto na tela */
+#veil{position:fixed;inset:0;z-index:1;background:#0b0906;opacity:0;pointer-events:none;transition:opacity .8s var(--ease)}
+#veil.on{opacity:.34}
+
+/* carregamento */
+#loader{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;text-align:center;background:#1b1611;transition:opacity 1.2s var(--ease),visibility 1.2s}
+#loader.done{opacity:0;visibility:hidden}
+.ld{display:flex;flex-direction:column;align-items:center;gap:18px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:rgba(246,241,228,.6)}
+.ld b{font-family:var(--display);font-weight:200;font-size:28px;letter-spacing:.2em;color:var(--paper)}
+.ld b i{font-style:normal;color:var(--sun)}
+.bar{width:160px;height:1px;background:rgba(246,241,228,.15);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sun);transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease)}
+
+/* nav */
+.nav{position:fixed;top:18px;left:var(--gutter);right:var(--gutter);z-index:20;display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.nav .mark{font-family:var(--display);font-weight:300;letter-spacing:.2em;font-size:13px}
+.nav .mark i{font-style:normal;color:var(--sun)}
+.nav ul{display:flex;gap:clamp(14px,3vw,34px);list-style:none}
+.nav a{position:relative;padding:6px 0}
+.nav a::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--sun);transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease)}
+.nav a:hover::after{transform:scaleX(1);transform-origin:left}
+
+/* aviso de rolagem */
+.scroll-hint{position:fixed;left:50%;bottom:clamp(22px,4vh,40px);transform:translateX(-50%);z-index:15;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--paper);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.scroll-hint.gone{opacity:0;transform:translate(-50%,12px);pointer-events:none}
+.mouse{width:24px;height:38px;border:1.5px solid currentColor;border-radius:14px;position:relative}
+.mouse::after{content:'';position:absolute;left:50%;top:7px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:currentColor;animation:wheel 1.8s var(--ease) infinite}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(10px);opacity:0}100%{opacity:0}}
+@media (hover:none){.mouse{display:none}}
+
+/* seções: cada uma é um trecho do percurso; o conteúdo fica preso na tela e só sai quando o próximo empurra */
+main{position:relative;z-index:2}
+.room{position:relative}
+.stick{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:96px var(--gutter) 72px;pointer-events:none}
+.block{width:min(820px,100%);text-align:left}
+.stick>*{pointer-events:auto}
+#topo{height:130vh}
+#sobre{height:190vh}
+#sobre2{height:170vh}
+#projetos{height:420vh}
+#contato{height:160vh}
+
+.label{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--sun-soft);margin-bottom:18px}
+.title{font-size:clamp(32px,4.6vw,58px);line-height:1.05;letter-spacing:-.01em}
+.title em{font-style:normal;color:var(--sun)}
+
+/* abertura: só o nome, no centro */
+.hero .stick{justify-content:center;align-items:center;text-align:center}
+.hero h1{display:flex;flex-direction:column;align-items:center;gap:clamp(14px,2.4vh,26px);font-family:'Jost',var(--display);font-weight:200;font-size:clamp(28px,5vw,72px);line-height:1;letter-spacing:.22em;text-transform:uppercase;color:#fff;text-shadow:0 2px 40px rgba(0,0,0,.35)}
+.hero h1 span{display:block;padding-left:.22em}
+.hero h1 i{display:block;width:clamp(36px,5vw,64px);height:1px;background:var(--sun)}
+
+/* quem sou */
+.about{display:grid;grid-template-columns:clamp(180px,22vw,280px) minmax(0,560px);gap:clamp(24px,4vw,56px);align-items:center;justify-content:center;text-align:left}
+.photo{aspect-ratio:4/5;border-radius:22px;overflow:hidden;background:#2a2219}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.bio{font-size:clamp(16px,1.5vw,20px);line-height:1.6;max-width:56ch}
+.bio em{font-style:normal;color:var(--moss)}
+.topics{display:flex;flex-wrap:wrap;gap:clamp(18px,3vw,44px);margin-top:clamp(20px,3vh,30px);padding-top:18px;border-top:1px solid var(--line)}
+.topic small{display:block;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.6;margin-bottom:4px}
+.topic b{font-family:var(--display);font-weight:400;font-size:clamp(14px,1.25vw,17px)}
+.topic b i{font-style:normal;color:var(--sun)}
+
+/* onde estudo e trabalho */
+.tl{position:relative;padding-left:26px;max-width:640px}
+.tl::before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--line)}
+.tl-item{position:relative;padding-bottom:clamp(18px,3vh,28px)}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:'';position:absolute;left:-25px;top:9px;width:11px;height:11px;border-radius:50%;background:var(--sun);box-shadow:0 0 12px rgba(233,185,73,.6)}
+.tl-item.past::before{background:var(--moss);box-shadow:none}
+.tl-when{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--sun-soft)}
+.tl-what{font-family:var(--display);font-weight:400;font-size:clamp(17px,1.7vw,22px);margin:4px 0 2px}
+.tl-how{font-size:14px;opacity:.75}
+.skills{display:flex;flex-wrap:wrap;gap:clamp(14px,2.2vw,30px);margin-top:clamp(22px,4vh,36px);padding-top:20px;border-top:1px solid var(--line);max-width:760px}
+.sk{display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.04em}
+.sk i{width:26px;height:26px;background:currentColor;-webkit-mask:var(--ico) center/contain no-repeat;mask:var(--ico) center/contain no-repeat;flex:none;color:var(--sun-soft)}
+.sk svg{width:26px;height:26px;flex:none;color:var(--sun-soft)}
+
+/* projetos: um por parada da caminhada, sem moldura */
+#projetos .stick{justify-content:center;text-align:center}
+.proj-head{justify-content:center}
+.proj-head{display:flex;align-items:baseline;gap:16px;margin-bottom:clamp(14px,2.4vh,22px)}
+.proj-head .n{font-family:var(--display);font-weight:300;font-size:13px;letter-spacing:.12em;color:var(--sun);font-variant-numeric:tabular-nums}
+.stack{position:relative;width:min(360px,82vw,40vh);aspect-ratio:4/5}
+.proj{position:absolute;inset:0;opacity:0;transform:translateY(16px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.proj.on{opacity:1;transform:none}
+.proj img{width:100%;height:100%;object-fit:cover;display:block;border-radius:20px;box-shadow:0 40px 70px -30px rgba(0,0,0,.8)}
+.proj .cap{position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 14px);white-space:nowrap;text-align:center}
+.proj .cap b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(17px,1.6vw,21px)}
+.proj .cap small{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.65}
+.steps{display:flex;gap:7px;margin-top:clamp(86px,12vh,104px);justify-content:center}
+.steps i{width:7px;height:7px;border-radius:50%;background:rgba(246,241,228,.3);transition:background .4s,transform .4s}
+.steps i.on{background:var(--sun);transform:scale(1.3)}
+
+/* contato */
+#contato .stick{text-align:center}
+.links{margin-top:clamp(28px,5vh,44px);width:min(620px,100%);text-align:left}
+.link{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:clamp(16px,2.6vh,22px) 0;border-top:1px solid var(--line)}
+.link:last-child{border-bottom:1px solid var(--line)}
+.link small{display:block;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.6;margin-bottom:3px}
+.link .v{display:block;font-family:var(--display);font-weight:300;font-size:clamp(17px,1.9vw,24px);transition:transform .5s var(--ease)}
+.link:hover .v{transform:translateX(8px)}
+.link .arrow{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;flex:none;transition:transform .5s var(--ease),background .5s,color .5s,border-color .5s}
+.link:hover .arrow{background:var(--sun);color:var(--ink);border-color:var(--sun);transform:rotate(-45deg)}
+.foot{margin-top:clamp(24px,4vh,36px);font-size:12px;opacity:.55;line-height:1.7}
+.foot a{text-decoration:underline;text-underline-offset:3px}
+.cred-btn{background:none;border:0;padding:0;font-size:11px;letter-spacing:.06em;opacity:.7;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.cred-btn:hover{opacity:1}
+.cred{display:block;margin-top:4px;font-size:11px;opacity:.75}
+.cred[hidden]{display:none}
+
+@media (max-width:760px){
+  .stick{padding:76px var(--gutter) 48px}
+  .tl-item{padding-bottom:14px}
+  .title{font-size:28px}
+  .skills{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:16px;padding-top:12px}
+  .sk{font-size:11.5px}
+  .sk i,.sk svg{width:20px;height:20px}
+  .tl-how{font-size:12.5px}
+  .tl-what{font-size:16px}
+  .about{grid-template-columns:1fr;gap:18px}
+  .photo{width:min(150px,40vw)}
+  .bio{font-size:15px}
+  .nav ul{gap:14px}
+  .nav{font-size:11px}
+}
+@media (max-width:420px){
+  .nav .mark{display:none}
+  .topics{gap:14px 22px}
+}
+@media (prefers-reduced-motion:reduce){.mouse::after{animation:none}}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="veil" class="on" aria-hidden="true"></div>
+
+<div id="loader"><div class="ld"><b>M<i>·</i>K</b><span class="bar"><i id="barFill"></i></span></div></div>
+
+<nav class="nav">
+  <a href="#topo" class="mark">M<i>·</i>K</a>
+  <ul>
+    <li><a href="#sobre">Quem sou</a></li>
+    <li><a href="#projetos">Projetos</a></li>
+    <li><a href="#contato">Contato</a></li>
+  </ul>
+</nav>
+
+<div class="scroll-hint" id="hint"><span class="mouse"></span><span>Role para entrar</span></div>
+
+<main>
+  <section class="room hero" id="topo">
+    <div class="stick" data-veil>
+      <h1><span>Marcela</span><i aria-hidden="true"></i><span>Kaminise</span></h1>
+    </div>
+  </section>
+
+  <section class="room" id="sobre">
+    <div class="stick" data-veil data-in>
+      <div class="about">
+        <div class="photo"><img src="img/retrato-mk.jpg" alt="Retrato de Marcela Kaminise"></div>
+        <div>
+          <p class="label">01 · Quem sou</p>
+          <h2 class="title">Quem sou</h2>
+          <p class="bio" style="margin-top:18px">Tenho 21 anos e estudo Arquitetura e Urbanismo em Uberlândia. Gosto de projetos que nascem do <em>lugar</em>: luz, materiais honestos e espaços que fazem sentido para quem vive neles. Há seis meses acompanho o projeto virar obra na Construtora HOME.</p>
+          <div class="topics">
+            <div class="topic"><small>Curso</small><b>Arquitetura e Urbanismo</b></div>
+            <div class="topic"><small>Período</small><b><i>5º</i> de 10</b></div>
+            <div class="topic"><small>Onde</small><b>ESAMC · Uberlândia</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="room" id="sobre2">
+    <div class="stick" data-veil data-in>
+      <div class="block">
+      <p class="label">02 · Onde estudo e trabalho</p>
+      <h2 class="title">Formação e <em>experiência</em></h2>
+      <div class="tl" style="margin-top:clamp(22px,4vh,34px)">
+        <div class="tl-item">
+          <p class="tl-when">Abr 2026 — hoje · 6 meses</p>
+          <p class="tl-what">Construtora HOME</p>
+          <p class="tl-how">Estágio em arquitetura · acompanhamento de projeto e obra · Uberlândia</p>
+        </div>
+        <div class="tl-item past">
+          <p class="tl-when">2024 — hoje · 5º período</p>
+          <p class="tl-what">ESAMC Uberlândia</p>
+          <p class="tl-how">Arquitetura e Urbanismo · bacharelado</p>
+        </div>
+      </div>
+      <div class="skills">
+        <div class="sk"><i style="--ico:url(img/icons/archicad.svg)"></i>ArchiCAD</div>
+        <div class="sk"><i style="--ico:url(img/icons/sketchup.svg)"></i>Modelagem 3D · SketchUp</div>
+        <div class="sk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M4 13a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3H4z"/><path d="M6 16v2M18 16v2"/><path d="M8 11v2M16 11v2"/></svg>Design de interiores</div>
+        <div class="sk"><i style="--ico:url(img/icons/autocad.svg)"></i>AutoCAD</div>
+        <div class="sk"><i style="--ico:url(img/icons/autodeskrevit.svg)"></i>Revit</div>
+        <div class="sk"><i style="--ico:url(img/icons/adobephotoshop.svg)"></i>Photoshop</div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="room" id="projetos">
+    <div class="stick" data-veil data-in>
+      <div class="proj-head"><p class="label" style="margin:0">03 · Projetos</p><span class="n" id="projN">01 / 04</span></div>
+      <div class="stack" id="stack">
+        <article class="proj on"><img src="img/proj-1-wa.jpg" alt="Hall de entrada com banco e ganchos" loading="lazy"><div class="cap"><b>Hall de entrada</b><small>Design de interiores</small></div></article>
+        <article class="proj"><img src="img/proj-2-wa.jpg" alt="Estante ripada com nichos" loading="lazy"><div class="cap"><b>Estante ripada</b><small>Marcenaria</small></div></article>
+        <article class="proj"><img src="img/proj-3-wa.jpg" alt="Quarto com armário e home office" loading="lazy"><div class="cap"><b>Quarto e home office</b><small>Design de interiores</small></div></article>
+        <article class="proj"><img src="img/proj-4-wa.jpg" alt="Suíte com painel de TV" loading="lazy"><div class="cap"><b>Suíte</b><small>Design de interiores</small></div></article>
+      </div>
+      <span class="steps" id="steps"><i class="on"></i><i></i><i></i><i></i></span>
+    </div>
+  </section>
+
+  <section class="room" id="contato">
+    <div class="stick" data-veil data-in>
+      <p class="label">04 · Contato</p>
+      <h2 class="title">Vamos <em>conversar?</em></h2>
+      <div class="links">
+        <a class="link" href="https://instagram.com/marcelaKaminise" target="_blank" rel="noopener">
+          <span><small>Instagram</small><span class="v">@marcelaKaminise</span></span>
+          <span class="arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+        <a class="link" href="https://wa.me/55349988732263" target="_blank" rel="noopener">
+          <span><small>WhatsApp</small><span class="v">+55 34 9 98873 2263</span></span>
+          <span class="arrow" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+      </div>
+      <p class="foot">© 2026 Marcela Kaminise · Uberlândia · <button class="cred-btn" id="credBtn" aria-expanded="false">créditos</button><span class="cred" id="cred" hidden>Casa 3D: <a href="https://sketchfab.com/3d-models/duplex-70ab4f4164b54afbad87f174f8b285c1" target="_blank" rel="noopener">“Duplex”</a>, de <a href="https://sketchfab.com/crispimrafael" target="_blank" rel="noopener">SrMonteiro</a> (CC BY 4.0)</span></p>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const smooth = t => t * t * (3 - 2 * t);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const small = matchMedia('(max-width: 760px)').matches;
+const SNAP = location.search.includes('snap');
+
+$('#credBtn').addEventListener('click', () => { const c = $('#cred'); c.hidden = !c.hidden; $('#credBtn').setAttribute('aria-expanded', String(!c.hidden)); });
+
+/* ---------- renderizador (sempre leve: render direto, sem pós-produção) ---------- */
+const canvas = $('#scene');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }); }
+catch (e) { canvas.remove(); $('#loader').classList.add('done'); throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth, innerHeight, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(small ? 64 : 52, innerWidth / innerHeight, 0.05, 300);
+
+/* ---------- carregamento ---------- */
+const manager = new THREE.LoadingManager();
+let loading = true;
+manager.onProgress = (_, loaded, total) => { if (loading) $('#barFill').style.transform = `scaleX(${loaded / total})`; };
+const texLoader = new THREE.TextureLoader(manager);
+const gltf = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
+const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+const loadTex = (url, srgb) => texLoader.loadAsync(url).then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; });
+
+const [hdr, nycTex, projTex, gravel, house] = await Promise.all([
+  new RGBELoader(manager).loadAsync('3d/sky.hdr'),
+  loadTex(small ? 'img/nyc-m.jpg' : 'img/nyc.jpg', true),
+  Promise.all([1, 2, 3, 4].map(i => loadTex(`img/proj-${i}-wa.jpg`, true))),
+  Promise.all(['diff', 'nor'].map(k => loadTex(`3d/tex/gravel_floor_${k}.jpg`, k === 'diff'))),
+  gltf.loadAsync('3d/duplex.glb').then(r => r.scene)
+]);
+hdr.mapping = THREE.EquirectangularReflectionMapping;
+scene.environment = hdr; scene.environmentIntensity = .7;
+scene.background = new THREE.Color(0xded8d8);
+
+/* ---------- a casa: "Duplex", de SrMonteiro (CC BY 4.0), via Sketchfab ----------
+   iluminação assada no canal emissivo: a casa não recebe luz da cena.
+   eixos depois de centrar: x -4,4 → 4,4 · z -3,5 → 3,5 · piso em y = 0 · mezanino em y ≈ 2,9 */
+{ const b = new THREE.Box3().setFromObject(house), c = b.getCenter(new THREE.Vector3()); house.position.set(-c.x, -b.min.y, -c.z); }
+house.traverse(o => {
+  if (!o.isMesh) return;
+  const m = o.material;
+  if (m.emissiveMap) { m.emissiveIntensity = 1.15; m.color.set(0x000000); m.roughness = 1; m.metalness = 0; m.envMapIntensity = 0; m.emissiveMap.anisotropy = aniso; }
+  else { m.transparent = true; m.opacity = .16; m.color.set(0xaac4c8); m.roughness = .05; m.metalness = 0; m.depthWrite = false; m.side = THREE.DoubleSide; o.renderOrder = 2; }
+});
+scene.add(house);
+
+/* exterior: terraço e a vista de Nova York num painel curvo em volta das janelas */
+{
+  for (const t of gravel) { t.repeat.set(48, 48); t.needsUpdate = true; }
+  const roof = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), new THREE.MeshStandardMaterial({ map: gravel[0], normalMap: gravel[1], color: 0x4a4440, roughness: 1, envMapIntensity: .2 }));
+  roof.rotation.x = -Math.PI / 2; roof.position.y = -.03; scene.add(roof);
+  const R = 40, ARC = Math.PI * 150 / 180, H = R * ARC / (nycTex.image.width / nycTex.image.height);
+  nycTex.repeat.x = -1; // vista por dentro do cilindro
+  const pano = new THREE.Mesh(new THREE.CylinderGeometry(R, R, H, 96, 1, true, Math.PI * 3 / 4 - ARC / 2, ARC), new THREE.MeshBasicMaterial({ map: nycTex, side: THREE.BackSide }));
+  pano.position.y = H * .5 - H * .55; // horizonte da foto na altura dos olhos
+  scene.add(pano);
+}
+
+/* quadros dos projetos: grade 2x2 num painel claro do hall (x ≈ -4,2), à frente do quadro saliente do modelo */
+{
+  const wood = new THREE.MeshStandardMaterial({ color: 0x4a3524, roughness: .7 });
+  const paper = new THREE.MeshStandardMaterial({ color: 0xf6f1e4, roughness: .9 });
+  const board = new THREE.Mesh(new THREE.BoxGeometry(.02, 1.9, 1.6), new THREE.MeshStandardMaterial({ color: 0xcfc4b0, roughness: 1 })); board.position.set(-4.24, 1.55, -.4); scene.add(board);
+  [[-.03, 2.0], [-.77, 2.0], [-.03, 1.1], [-.77, 1.1]].forEach(([z, y], i) => {
+    const f = new THREE.Mesh(new THREE.BoxGeometry(.04, .86, .7), wood); f.position.set(-4.21, y, z); scene.add(f);
+    const pp = new THREE.Mesh(new THREE.PlaneGeometry(.62, .78), paper); pp.position.set(-4.188, y, z); pp.rotation.y = Math.PI / 2; scene.add(pp);
+    const img = new THREE.Mesh(new THREE.PlaneGeometry(.5, .64), new THREE.MeshStandardMaterial({ map: projTex[i], roughness: .6, emissive: 0xffffff, emissiveMap: projTex[i], emissiveIntensity: .45 }));
+    img.position.set(-4.184, y + .01, z); img.rotation.y = Math.PI / 2; scene.add(img);
+  });
+  for (const z of [-.03, -.77]) { const s = new THREE.SpotLight(0xffd9a8, 4, 3.2, .62, .7, 2); s.position.set(-3.6, 2.75, z); s.target.position.set(-4.25, 1.5, z); scene.add(s, s.target); }
+}
+
+/* ---------- percurso da câmera ----------
+   cada parada é presa a um ponto da rolagem de uma seção (0 = início, 1 = fim) */
+const v = (x, y, z) => new THREE.Vector3(x, y, z);
+const STOPS = [
+  // sala de pé-direito duplo: escada, parede de concreto e a janela com a cidade
+  ['#topo', 0, v(.3, 1.65, -2.2), v(4.4, 2.4, -1.0)],
+  ['#topo', 1, v(1.2, 1.6, -.6), v(-.3, 1.5, 1.2)],
+  // passagem entre o pilar e a ilha, entrando no hall
+  ['#sobre', 0, v(-.3, 1.6, .85), v(-4.4, 1.5, 2.2)],
+  ['#sobre', 1, v(-1.1, 1.6, 1.25), v(-4.4, 1.45, 1.6)],
+  ['#sobre2', 0, v(-1.6, 1.6, 1.0), v(-4.4, 1.6, 1.3)],
+  ['#sobre2', 1, v(-2.0, 1.62, .3), v(-4.3, 1.55, .8)],
+  // projetos: 1 na galeria · 2 na sala · 3 na escada · 4 no topo
+  ['#projetos', .06, v(-2.35, 1.62, -.4), v(-4.2, 1.55, -.4)],
+  ['#projetos', .16, v(-1.2, 1.6, 1.0), v(2.0, 1.6, -1.5)],
+  ['#projetos', .22, v(.5, 1.6, .7), v(3.8, 2.2, -.5)],
+  ['#projetos', .32, v(1.8, 1.6, -1.2), v(3.8, 2.6, .2)],
+  ['#projetos', .46, v(3.7, 1.8, -2.5), v(3.7, 4.4, 1.2)],
+  ['#projetos', .58, v(3.7, 2.8, -.9), v(3.4, 4.7, 1.6)],
+  ['#projetos', .7, v(3.1, 4.2, .7), v(.5, 4.2, 2.9)],
+  ['#projetos', .84, v(1.5, 4.45, 1.3), v(.6, 4.2, 3.4)],
+  // varanda do mezanino: a vista sobre o vazio para as janelas e a cidade
+  ['#contato', 0, v(1.1, 4.45, .9), v(1.5, 3.5, -3.5)],
+  ['#contato', 1, v(.8, 4.45, .55), v(1.6, 3.3, -3.5)]
+];
+const PROJECT_STOPS = [.06, .32, .46, .7]; // onde cada projeto fica em destaque (fração da seção)
+const posCurve = new THREE.CatmullRomCurve3(STOPS.map(s => s[2]), false, 'centripetal');
+const tgtCurve = new THREE.CatmullRomCurve3(STOPS.map(s => s[3]), false, 'centripetal');
+let stopY = [];
+const secY = (sel, f) => { const el = $(sel); const top = el.getBoundingClientRect().top + scrollY; return top + f * Math.max(0, el.offsetHeight - innerHeight); };
+function measure() { stopY = STOPS.map(([sel, f]) => secY(sel, f)); }
+function pathAt(y) {
+  const n = STOPS.length;
+  let i = 0; while (i < n - 2 && y >= stopY[i + 1]) i++;
+  const t = smooth(clamp((y - stopY[i]) / Math.max(1, stopY[i + 1] - stopY[i])));
+  return (i + t) / (n - 1);
+}
+
+/* ---------- rolagem ---------- */
+gsap.registerPlugin(ScrollTrigger);
+const lenis = !reduce && window.Lenis ? new Lenis({ lerp: .08, smoothWheel: true }) : null;
+if (lenis) { lenis.on('scroll', ScrollTrigger.update); gsap.ticker.add(t => lenis.raf(t * 1000)); gsap.ticker.lagSmoothing(0); }
+const goTo = (t, d = 1.6) => lenis ? lenis.scrollTo(t, { duration: d }) : window.scrollTo({ top: typeof t === 'number' ? t : t.getBoundingClientRect().top + scrollY, behavior: 'smooth' });
+$$('a[href^="#"]').forEach(a => a.addEventListener('click', e => { const t = $(a.getAttribute('href')); if (!t) return; e.preventDefault(); goTo(t, 2.2); }));
+
+// cada bloco entra logo no início da sua seção e fica até o próximo empurrá-lo para cima
+$$('[data-in]').forEach(el => gsap.from(el, { opacity: 0, y: 36, ease: 'none', scrollTrigger: { trigger: el.parentElement, start: 'top 60%', end: 'top 15%', scrub: true } }));
+// véu: escurece de leve enquanto algum bloco de texto está na tela
+let veilCount = 0; $('#veil').classList.remove('on');
+$$('[data-veil]').forEach(el => ScrollTrigger.create({
+  trigger: el.parentElement, start: el.parentElement.id === 'topo' ? 'top bottom' : 'top 65%', end: 'bottom 30%',
+  onToggle: st => { veilCount += st.isActive ? 1 : -1; $('#veil').classList.toggle('on', veilCount > 0); }
+}));
+
+// projetos: casa levemente desfocada; a cada parada da caminhada, um projeto em destaque
+const projs = $$('#stack .proj'), steps = $$('#steps i'); let projIdx = 0;
+function showProj(i) { if (i === projIdx) return; projIdx = i; projs.forEach((c, k) => c.classList.toggle('on', k === i)); steps.forEach((d, k) => d.classList.toggle('on', k === i)); $('#projN').textContent = `0${i + 1} / 04`; }
+ScrollTrigger.create({
+  trigger: '#projetos', start: 'top top', end: 'bottom bottom',
+  onToggle: st => canvas.classList.toggle('blur', st.isActive),
+  onUpdate: st => { const p = st.progress; showProj(p < .19 ? 0 : p < .39 ? 1 : p < .58 ? 2 : 3); }
+});
+// encaixe suave: ao parar de rolar dentro dos projetos, a página assenta na parada mais próxima
+let settle = 0;
+addEventListener('scroll', () => {
+  if (!lenis || SNAP) return;
+  clearTimeout(settle);
+  settle = setTimeout(() => {
+    const y = scrollY, ys = PROJECT_STOPS.map(f => secY('#projetos', f));
+    if (y < ys[0] - innerHeight * .3 || y > ys[3] + innerHeight * .3) return;
+    const near = ys.reduce((a, b) => Math.abs(b - y) < Math.abs(a - y) ? b : a);
+    if (Math.abs(near - y) > 6) lenis.scrollTo(near, { duration: .9 });
+  }, 220);
+}, { passive: true });
+
+/* ---------- laço ---------- */
+let dirty = true, mx = 0, my = 0, tmx = 0, tmy = 0, u = 0, uS = 0;
+const camPos = new THREE.Vector3(), camTgt = new THREE.Vector3(), lookAt = new THREE.Vector3(), look = new THREE.Vector3(), side = new THREE.Vector3();
+addEventListener('pointermove', e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); measure(); dirty = true; });
+ScrollTrigger.addEventListener('refresh', () => { measure(); dirty = true; });
+measure(); uS = u = pathAt(scrollY);
+
+gsap.ticker.add((time, dtMs) => {
+  const dt = Math.min(dtMs / 1000, .05);
+  u = pathAt(scrollY);
+  const k = reduce || SNAP ? 1 : 1 - Math.exp(-dt * 6), km = 1 - Math.exp(-dt * 3.5);   // suavização independente da taxa de quadros
+  const du = u - uS, dm = Math.abs(tmx - mx) + Math.abs(tmy - my);
+  uS += du * k; mx += (tmx - mx) * km; my += (tmy - my) * km;
+  if (Math.abs(du) > 1e-5 || dm > 1e-4 || dirty) {
+    posCurve.getPoint(uS, camPos); tgtCurve.getPoint(uS, camTgt);
+    look.subVectors(camTgt, camPos).normalize(); side.crossVectors(look, camera.up).normalize();
+    lookAt.copy(camTgt).addScaledVector(side, mx * .9).addScaledVector(camera.up, -my * .5);
+    camera.position.copy(camPos); camera.lookAt(lookAt);
+    renderer.render(scene, camera); dirty = false;
+  }
+  $('#hint').classList.toggle('gone', scrollY > 40);
+});
+
+/* pronto: compila, abre a casa */
+renderer.compile(scene, camera); renderer.render(scene, camera);
+loading = false;
+$('#barFill').style.transform = 'scaleX(1)';
+ScrollTrigger.refresh();
+setTimeout(() => { canvas.classList.add('on'); $('#loader').classList.add('done'); }, 200);
+</script>
+</body>
+</html>
