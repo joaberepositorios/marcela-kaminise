@@ -473,8 +473,13 @@ $$('[data-veil]').forEach(el => ScrollTrigger.create({
   onToggle: st => { veilCount += st.isActive ? 1 : -1; $('#veil').classList.toggle('on', veilCount > 0); }
 }));
 
-// projetos: casa levemente desfocada enquanto a seção está na tela
-ScrollTrigger.create({ trigger: '#projetos', start: 'top top', end: 'bottom bottom', onToggle: st => canvas.classList.toggle('blur', st.isActive) });
+// casa levemente desfocada na abertura (só o nome na tela) e nos projetos; nítida no resto do percurso
+const blurOn = { '#topo': scrollY < innerHeight * .5, '#projetos': false };
+const applyBlur = () => canvas.classList.toggle('blur', Object.values(blurOn).some(Boolean));
+const blurIn = (trigger, start, end) => ScrollTrigger.create({ trigger, start, end, onToggle: st => { blurOn[trigger] = st.isActive; applyBlur(); } });
+blurIn('#topo', 'top top', 'bottom 45%');
+blurIn('#projetos', 'top top', 'bottom bottom');
+applyBlur();
 // em cada projeto, o texto fica preso e as imagens passam pelo quadro conforme a rolagem:
 // a tira de imagens avança uma posição por vez (pausa → passagem → pausa), e ao chegar na última a página segue para o próximo projeto
 $$('.pj').forEach(pj => {
