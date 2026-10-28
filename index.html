@@ -21,7 +21,7 @@
 html{-webkit-text-size-adjust:100%}
 html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto!important}
-body{background:#2a2219 url(img/cena-4.jpg) center/cover fixed;color:var(--paper);font-family:'Space Grotesk',system-ui,sans-serif;font-weight:300;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{background:#2a2219;color:var(--paper);font-family:'Space Grotesk',system-ui,sans-serif;font-weight:300;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit}
 ::selection{background:var(--sun-soft);color:var(--ink)}
@@ -345,10 +345,15 @@ $('#credBtn').addEventListener('click', () => { const c = $('#cred'); c.hidden =
 /* ---------- renderizador (sempre leve: render direto, sem pós-produção) ---------- */
 const canvas = $('#scene');
 let renderer;
-try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }); }
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false }); }
 catch (e) { canvas.remove(); $('#loader').classList.add('done'); throw e; }
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-renderer.setSize(innerWidth, innerHeight, false);
+// duas resoluções: em movimento, baixa (passa despercebido); parado, um único quadro em resolução máxima.
+// o canvas só é redimensionado junto com um render, no mesmo quadro (senão aparece um quadro vazio = piscada)
+const RES = { moveDpr: .75, moveWidth: 1400, stillDpr: 2, stillWidth: 3840, minScale: .5, slowFrameMs: 22, stillAfter: .15 };
+let scale = 1, curPr = 0;
+const prFor = still => still ? Math.min(devicePixelRatio || 1, RES.stillDpr, RES.stillWidth / innerWidth) : Math.min(devicePixelRatio || 1, RES.moveDpr, RES.moveWidth / innerWidth) * scale;
+const setRes = still => { const pr = prFor(still); if (Math.abs(pr - curPr) < 1e-3) return; curPr = pr; renderer.setPixelRatio(pr); renderer.setSize(innerWidth, innerHeight, false); };
+setRes(true);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.12;
@@ -482,25 +487,30 @@ $$('.pj').forEach(pj => {
 });
 
 /* ---------- laço ---------- */
-let dirty = true, mx = 0, my = 0, tmx = 0, tmy = 0, u = 0, uS = 0;
-const camPos = new THREE.Vector3(), camTgt = new THREE.Vector3(), lookAt = new THREE.Vector3(), look = new THREE.Vector3(), side = new THREE.Vector3();
-addEventListener('pointermove', e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
-addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); measure(); dirty = true; });
+let dirty = true, u = 0, uS = 0, lastMove = -1, stillDone = false;
+const camPos = new THREE.Vector3(), camTgt = new THREE.Vector3(), frames = [];
+addEventListener('resize', () => { curPr = 0; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); measure(); dirty = true; });
 ScrollTrigger.addEventListener('refresh', () => { measure(); dirty = true; });
 measure(); uS = u = pathAt(scrollY);
 
 gsap.ticker.add((time, dtMs) => {
   const dt = Math.min(dtMs / 1000, .05);
   u = pathAt(scrollY);
-  const k = reduce || SNAP ? 1 : 1 - Math.exp(-dt * 6), km = 1 - Math.exp(-dt * 3.5);   // suavização independente da taxa de quadros
-  const du = u - uS, dm = Math.abs(tmx - mx) + Math.abs(tmy - my);
-  uS += du * k; mx += (tmx - mx) * km; my += (tmy - my) * km;
-  if (Math.abs(du) > 1e-5 || dm > 1e-4 || dirty) {
+  const k = reduce || SNAP ? 1 : 1 - Math.exp(-dt * 6);   // suavização independente da taxa de quadros
+  const du = u - uS; uS += du * k;
+  const moving = Math.abs(du) > 1e-5;
+  if (moving) { lastMove = time; stillDone = false; }
+  const still = !moving && time - lastMove > RES.stillAfter;
+  if (moving || dirty || (still && !stillDone)) {
+    setRes(still);
     posCurve.getPoint(uS, camPos); tgtCurve.getPoint(uS, camTgt);
-    look.subVectors(camTgt, camPos).normalize(); side.crossVectors(look, camera.up).normalize();
-    lookAt.copy(camTgt).addScaledVector(side, mx * .9).addScaledVector(camera.up, -my * .5);
-    camera.position.copy(camPos); camera.lookAt(lookAt);
-    renderer.render(scene, camera); dirty = false;
+    camera.position.copy(camPos); camera.lookAt(camTgt);
+    renderer.render(scene, camera); dirty = false; if (still) stillDone = true;
+    // se a máquina engasgar em movimento, a resolução em movimento cai sozinha (até metade)
+    if (moving && !SNAP && scale > RES.minScale) {
+      frames.push(dtMs);
+      if (frames.length >= 40) { frames.sort((a, b) => a - b); if (frames[20] > RES.slowFrameMs) scale = Math.max(RES.minScale, scale - .15); frames.length = 0; }
+    }
   }
   $('#hint').classList.toggle('gone', scrollY > 40);
 });
