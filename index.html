@@ -66,11 +66,11 @@ main{position:relative;z-index:2}
 .stick{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:96px var(--gutter) 72px;pointer-events:none}
 .block{width:min(820px,100%);text-align:left}
 .stick>*{pointer-events:auto}
-#topo{height:130vh}
-#sobre{height:190vh}
-#sobre2{height:170vh}
-#projetos{height:420vh}
-#contato{height:160vh}
+/* alturas curtas: o próximo texto chega logo depois do anterior, sem vazio entre eles */
+#topo{height:110vh}
+#sobre{height:130vh}
+#sobre2{height:125vh}
+#contato{height:120vh}
 
 .label{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--sun-soft);margin-bottom:18px}
 .title{font-size:clamp(32px,4.6vw,58px);line-height:1.05;letter-spacing:-.01em}
@@ -108,21 +108,23 @@ main{position:relative;z-index:2}
 .sk i{width:26px;height:26px;background:currentColor;-webkit-mask:var(--ico) center/contain no-repeat;mask:var(--ico) center/contain no-repeat;flex:none;color:var(--sun-soft)}
 .sk svg{width:26px;height:26px;flex:none;color:var(--sun-soft)}
 
-/* projetos: um por parada da caminhada, sem moldura */
-#projetos .stick{justify-content:center;text-align:center}
-.proj-head{justify-content:center}
-.proj-head{display:flex;align-items:baseline;gap:16px;margin-bottom:clamp(14px,2.4vh,22px)}
-.proj-head .n{font-family:var(--display);font-weight:300;font-size:13px;letter-spacing:.12em;color:var(--sun);font-variant-numeric:tabular-nums}
-.stack{position:relative;width:min(360px,82vw,40vh);aspect-ratio:4/5}
-.proj{position:absolute;inset:0;opacity:0;transform:translateY(16px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
-.proj.on{opacity:1;transform:none}
-.proj img{width:100%;height:100%;object-fit:cover;display:block;border-radius:20px;box-shadow:0 40px 70px -30px rgba(0,0,0,.8)}
-.proj .cap{position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 14px);white-space:nowrap;text-align:center}
-.proj .cap b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(17px,1.6vw,21px)}
-.proj .cap small{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.65}
-.steps{display:flex;gap:7px;margin-top:clamp(86px,12vh,104px);justify-content:center}
-.steps i{width:7px;height:7px;border-radius:50%;background:rgba(246,241,228,.3);transition:background .4s,transform .4s}
-.steps i.on{background:var(--sun);transform:scale(1.3)}
+/* projetos: quatro subseções. Em cada uma, o texto fica preso na tela enquanto as imagens passam pelo quadro
+   conforme a rolagem; lados alternados (ímpar: imagens à esquerda; par: à direita) */
+.pj{position:relative;height:220vh}
+.pj .stick{padding-top:84px;padding-bottom:48px}
+.pj-grid{display:flex;align-items:center;gap:clamp(24px,5vw,80px);width:min(1180px,100%)}
+.pj:nth-child(even) .pj-grid{flex-direction:row-reverse}
+.pj-media{flex:0 0 auto;width:min(46vw,640px,calc((100svh - 150px) * 4 / 3))}
+.frame{position:relative;aspect-ratio:4/3;border-radius:22px;overflow:hidden;background:#2a2219;box-shadow:0 40px 80px -30px rgba(0,0,0,.8)}
+.track{display:flex;flex-direction:column;will-change:transform}
+.track img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;flex:none}
+.pj-dots{display:flex;gap:7px;justify-content:center;margin-top:16px}
+.pj-dots i{width:7px;height:7px;border-radius:50%;background:rgba(246,241,228,.3);transition:background .4s,transform .4s}
+.pj-dots i.on{background:var(--sun);transform:scale(1.3)}
+.pj-text{flex:1 1 0;min-width:0;max-width:520px}
+.pj-text .title{font-size:clamp(28px,3.6vw,46px)}
+.pj-text .desc{margin-top:18px;font-size:clamp(15px,1.3vw,18px);line-height:1.6}
+.pj-meta{display:flex;flex-wrap:wrap;gap:clamp(16px,2.6vw,36px);margin-top:clamp(18px,3vh,26px);padding-top:16px;border-top:1px solid var(--line)}
 
 /* contato */
 #contato .stick{text-align:center}
@@ -155,6 +157,12 @@ main{position:relative;z-index:2}
   .bio{font-size:15px}
   .nav ul{gap:14px}
   .nav{font-size:11px}
+  .pj .stick{padding-top:70px;padding-bottom:28px}
+  .pj-grid,.pj:nth-child(even) .pj-grid{flex-direction:column;align-items:stretch;gap:16px}
+  .pj-media{width:min(100%,calc((100svh - 330px) * 4 / 3));margin:0 auto}
+  .pj-text{max-width:none}
+  .pj-text .desc{font-size:14px;margin-top:10px}
+  .pj-meta{margin-top:12px;padding-top:10px;gap:12px 20px}
 }
 @media (max-width:420px){
   .nav .mark{display:none}
@@ -241,16 +249,59 @@ main{position:relative;z-index:2}
     </div>
   </section>
 
+  <!-- projetos: títulos, textos e imagens são EXEMPLOS (placeholders) — trocar pelo conteúdo real -->
   <section class="room" id="projetos">
-    <div class="stick" data-veil data-in>
-      <div class="proj-head"><p class="label" style="margin:0">03 · Projetos</p><span class="n" id="projN">01 / 04</span></div>
-      <div class="stack" id="stack">
-        <article class="proj on"><img src="img/proj-1-wa.jpg" alt="Hall de entrada com banco e ganchos" loading="lazy"><div class="cap"><b>Hall de entrada</b><small>Design de interiores</small></div></article>
-        <article class="proj"><img src="img/proj-2-wa.jpg" alt="Estante ripada com nichos" loading="lazy"><div class="cap"><b>Estante ripada</b><small>Marcenaria</small></div></article>
-        <article class="proj"><img src="img/proj-3-wa.jpg" alt="Quarto com armário e home office" loading="lazy"><div class="cap"><b>Quarto e home office</b><small>Design de interiores</small></div></article>
-        <article class="proj"><img src="img/proj-4-wa.jpg" alt="Suíte com painel de TV" loading="lazy"><div class="cap"><b>Suíte</b><small>Design de interiores</small></div></article>
+    <div class="pj" id="projeto-1">
+      <div class="stick" data-veil data-in>
+        <div class="pj-grid">
+          <div class="pj-media"><div class="frame"><div class="track"><img src="img/p1-1.jpg" alt=""><img src="img/p1-2.jpg" alt="" loading="lazy"><img src="img/p1-3.jpg" alt="" loading="lazy"></div></div><span class="pj-dots"><i class="on"></i><i></i><i></i></span></div>
+          <div class="pj-text">
+            <p class="label">03 · Projetos · 01</p>
+            <h2 class="title">Residência <em>Exemplo Um</em></h2>
+            <p class="desc">Texto de exemplo. Descreva aqui o projeto: o pedido do cliente, o terreno, o partido adotado e as decisões de luz, material e espaço. Dois ou três parágrafos curtos bastam.</p>
+            <div class="pj-meta"><div class="topic"><small>Tipo</small><b>Residencial</b></div><div class="topic"><small>Ano</small><b>2026</b></div><div class="topic"><small>Local</small><b>Uberlândia</b></div><div class="topic"><small>Área</small><b>180 m²</b></div></div>
+          </div>
+        </div>
       </div>
-      <span class="steps" id="steps"><i class="on"></i><i></i><i></i><i></i></span>
+    </div>
+    <div class="pj" id="projeto-2">
+      <div class="stick" data-veil data-in>
+        <div class="pj-grid">
+          <div class="pj-media"><div class="frame"><div class="track"><img src="img/p2-1.jpg" alt="" loading="lazy"><img src="img/p2-2.jpg" alt="" loading="lazy"><img src="img/p2-3.jpg" alt="" loading="lazy"></div></div><span class="pj-dots"><i class="on"></i><i></i><i></i></span></div>
+          <div class="pj-text">
+            <p class="label">03 · Projetos · 02</p>
+            <h2 class="title">Interiores <em>Exemplo Dois</em></h2>
+            <p class="desc">Texto de exemplo. Conte o conceito do ambiente, a paleta de materiais, o mobiliário desenhado e como a iluminação organiza o espaço ao longo do dia.</p>
+            <div class="pj-meta"><div class="topic"><small>Tipo</small><b>Interiores</b></div><div class="topic"><small>Ano</small><b>2026</b></div><div class="topic"><small>Local</small><b>Uberlândia</b></div><div class="topic"><small>Área</small><b>64 m²</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pj" id="projeto-3">
+      <div class="stick" data-veil data-in>
+        <div class="pj-grid">
+          <div class="pj-media"><div class="frame"><div class="track"><img src="img/p3-1.jpg" alt="" loading="lazy"><img src="img/p3-2.jpg" alt="" loading="lazy"><img src="img/p3-3.jpg" alt="" loading="lazy"></div></div><span class="pj-dots"><i class="on"></i><i></i><i></i></span></div>
+          <div class="pj-text">
+            <p class="label">03 · Projetos · 03</p>
+            <h2 class="title">Comercial <em>Exemplo Três</em></h2>
+            <p class="desc">Texto de exemplo. Explique o programa, o fluxo de quem usa o espaço, a fachada e a relação com a rua. Se houver, cite a etapa: estudo, projeto executivo ou obra.</p>
+            <div class="pj-meta"><div class="topic"><small>Tipo</small><b>Comercial</b></div><div class="topic"><small>Ano</small><b>2025</b></div><div class="topic"><small>Local</small><b>Uberlândia</b></div><div class="topic"><small>Área</small><b>240 m²</b></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pj" id="projeto-4">
+      <div class="stick" data-veil data-in>
+        <div class="pj-grid">
+          <div class="pj-media"><div class="frame"><div class="track"><img src="img/p4-1.jpg" alt="" loading="lazy"><img src="img/p4-2.jpg" alt="" loading="lazy"><img src="img/p4-3.jpg" alt="" loading="lazy"></div></div><span class="pj-dots"><i class="on"></i><i></i><i></i></span></div>
+          <div class="pj-text">
+            <p class="label">03 · Projetos · 04</p>
+            <h2 class="title">Acadêmico <em>Exemplo Quatro</em></h2>
+            <p class="desc">Texto de exemplo. Para um trabalho de faculdade: a disciplina, o tema, a proposta e o que foi aprendido. Pranchas, maquetes e perspectivas entram nas imagens ao lado.</p>
+            <div class="pj-meta"><div class="topic"><small>Tipo</small><b>Acadêmico</b></div><div class="topic"><small>Ano</small><b>2025</b></div><div class="topic"><small>Onde</small><b>ESAMC</b></div><div class="topic"><small>Etapa</small><b>Estudo preliminar</b></div></div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -376,20 +427,19 @@ const STOPS = [
   ['#sobre', 1, v(-1.1, 1.6, 1.25), v(-4.4, 1.45, 1.6)],
   ['#sobre2', 0, v(-1.6, 1.6, 1.0), v(-4.4, 1.6, 1.3)],
   ['#sobre2', 1, v(-2.0, 1.62, .3), v(-4.3, 1.55, .8)],
-  // projetos: 1 na galeria · 2 na sala · 3 na escada · 4 no topo
-  ['#projetos', .06, v(-2.35, 1.62, -.4), v(-4.2, 1.55, -.4)],
-  ['#projetos', .16, v(-1.2, 1.6, 1.0), v(2.0, 1.6, -1.5)],
-  ['#projetos', .22, v(.5, 1.6, .7), v(3.8, 2.2, -.5)],
-  ['#projetos', .32, v(1.8, 1.6, -1.2), v(3.8, 2.6, .2)],
-  ['#projetos', .46, v(3.7, 1.8, -2.5), v(3.7, 4.4, 1.2)],
-  ['#projetos', .58, v(3.7, 2.8, -.9), v(3.4, 4.7, 1.6)],
-  ['#projetos', .7, v(3.1, 4.2, .7), v(.5, 4.2, 2.9)],
-  ['#projetos', .84, v(1.5, 4.45, 1.3), v(.6, 4.2, 3.4)],
+  // projetos (quatro subseções de mesma altura, cada uma ocupa 1/4 da rolagem): 1 na galeria · 2 na sala · 3 na escada · 4 no topo
+  ['#projetos', .03, v(-2.35, 1.62, -.4), v(-4.2, 1.55, -.4)],
+  ['#projetos', .2, v(-1.2, 1.6, 1.0), v(2.0, 1.6, -1.5)],
+  ['#projetos', .28, v(.5, 1.6, .7), v(3.8, 2.2, -.5)],
+  ['#projetos', .45, v(1.8, 1.6, -1.2), v(3.8, 2.6, .2)],
+  ['#projetos', .53, v(3.7, 1.8, -2.5), v(3.7, 4.4, 1.2)],
+  ['#projetos', .7, v(3.7, 2.8, -.9), v(3.4, 4.7, 1.6)],
+  ['#projetos', .78, v(3.1, 4.2, .7), v(.5, 4.2, 2.9)],
+  ['#projetos', .95, v(1.5, 4.45, 1.3), v(.6, 4.2, 3.4)],
   // varanda do mezanino: a vista sobre o vazio para as janelas e a cidade
   ['#contato', 0, v(1.1, 4.45, .9), v(1.5, 3.5, -3.5)],
   ['#contato', 1, v(.8, 4.45, .55), v(1.6, 3.3, -3.5)]
 ];
-const PROJECT_STOPS = [.06, .32, .46, .7]; // onde cada projeto fica em destaque (fração da seção)
 const posCurve = new THREE.CatmullRomCurve3(STOPS.map(s => s[2]), false, 'centripetal');
 const tgtCurve = new THREE.CatmullRomCurve3(STOPS.map(s => s[3]), false, 'centripetal');
 let stopY = [];
@@ -418,26 +468,18 @@ $$('[data-veil]').forEach(el => ScrollTrigger.create({
   onToggle: st => { veilCount += st.isActive ? 1 : -1; $('#veil').classList.toggle('on', veilCount > 0); }
 }));
 
-// projetos: casa levemente desfocada; a cada parada da caminhada, um projeto em destaque
-const projs = $$('#stack .proj'), steps = $$('#steps i'); let projIdx = 0;
-function showProj(i) { if (i === projIdx) return; projIdx = i; projs.forEach((c, k) => c.classList.toggle('on', k === i)); steps.forEach((d, k) => d.classList.toggle('on', k === i)); $('#projN').textContent = `0${i + 1} / 04`; }
-ScrollTrigger.create({
-  trigger: '#projetos', start: 'top top', end: 'bottom bottom',
-  onToggle: st => canvas.classList.toggle('blur', st.isActive),
-  onUpdate: st => { const p = st.progress; showProj(p < .19 ? 0 : p < .39 ? 1 : p < .58 ? 2 : 3); }
+// projetos: casa levemente desfocada enquanto a seção está na tela
+ScrollTrigger.create({ trigger: '#projetos', start: 'top top', end: 'bottom bottom', onToggle: st => canvas.classList.toggle('blur', st.isActive) });
+// em cada projeto, o texto fica preso e as imagens passam pelo quadro conforme a rolagem:
+// a tira de imagens avança uma posição por vez (pausa → passagem → pausa), e ao chegar na última a página segue para o próximo projeto
+$$('.pj').forEach(pj => {
+  const track = pj.querySelector('.track'), n = track.children.length, dots = [...pj.querySelectorAll('.pj-dots i')];
+  const HOLD = .7, MOVE = 1, total = (n - 1) * (HOLD + MOVE) + HOLD;
+  const tl = gsap.timeline({ scrollTrigger: { trigger: pj, start: 'top top', end: 'bottom bottom', scrub: .5,
+    onUpdate: st => { const i = Math.min(n - 1, Math.floor((st.progress * total + MOVE / 2) / (HOLD + MOVE))); dots.forEach((d, k) => d.classList.toggle('on', k === i)); } } });
+  for (let i = 1; i < n; i++) tl.to({}, { duration: HOLD }).to(track, { yPercent: -i * 100 / n, duration: MOVE, ease: 'power2.inOut' });
+  tl.to({}, { duration: HOLD });
 });
-// encaixe suave: ao parar de rolar dentro dos projetos, a página assenta na parada mais próxima
-let settle = 0;
-addEventListener('scroll', () => {
-  if (!lenis || SNAP) return;
-  clearTimeout(settle);
-  settle = setTimeout(() => {
-    const y = scrollY, ys = PROJECT_STOPS.map(f => secY('#projetos', f));
-    if (y < ys[0] - innerHeight * .3 || y > ys[3] + innerHeight * .3) return;
-    const near = ys.reduce((a, b) => Math.abs(b - y) < Math.abs(a - y) ? b : a);
-    if (Math.abs(near - y) > 6) lenis.scrollTo(near, { duration: .9 });
-  }, 220);
-}, { passive: true });
 
 /* ---------- laço ---------- */
 let dirty = true, mx = 0, my = 0, tmx = 0, tmy = 0, u = 0, uS = 0;
